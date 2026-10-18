@@ -28,6 +28,8 @@ ALLOWED_ROOTS = [
     HOME + "/.cache",
     HOME + "/.local",
     "/Applications",
+    os.environ.get("TMPDIR", "").rstrip("/"),
+    os.path.dirname(os.environ.get("TMPDIR", "").rstrip("/")) + "/C",
 ]
 
 PROTECTED = [
@@ -36,6 +38,10 @@ PROTECTED = [
     HOME + "/Documents/GitHub/PROJECTS/Macos_PKvoicecloner/node_modules",
     HOME + "/Documents/GitHub/PROJECTS/Macos_PKmonitor/dist",
 ]
+
+# /var est un lien vers /private/var : on compare des chemins réels des deux côtés.
+ALLOWED_ROOTS = [os.path.realpath(r) for r in ALLOWED_ROOTS if r]
+PROTECTED = [os.path.realpath(p) for p in PROTECTED]
 
 
 def du_bytes(path):

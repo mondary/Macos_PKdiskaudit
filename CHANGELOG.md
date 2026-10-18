@@ -2,6 +2,11 @@
 
 Historique des évolutions de PKDiskAudit.
 
+## [2026.10.4] - 2026-10-18
+### Fixed
+- Les garde-fous de `cleanup.py` et `cleanup_review.py` comparent désormais des chemins **réels** : `/var` étant un lien vers `/private/var`, les temporaires système étaient refusés à tort (et le nettoyage des caches sous-estimé).
+- `cleanup.py` ignore les chemins disparus entre l'inventaire et la suppression (plus d'erreurs de course).
+
 ## [2026.10.3] - 2026-10-18
 ### Added
 - `scripts/cleanup_review.py` : suppression contrôlée d'une liste de chemins (dry-run par défaut, racines autorisées, refus des fichiers suivis par Git, liste de protection, journal et mesure réelle du volume avant/après).

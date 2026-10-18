@@ -14,7 +14,7 @@ from collections import OrderedDict
 from . import util
 
 SCHEMA_VERSION = 1
-ENGINE_VERSION = "2026.10.3"
+ENGINE_VERSION = "2026.10.4"
 
 HOME = util.HOME
 

@@ -55,6 +55,12 @@ CACHE_ROOTS = [
 ]
 TEMP_ROOTS = {TMP, (TMP_PARENT + "/C") if TMP_PARENT else ""}
 
+# /var est un lien vers /private/var : on normalise tout en chemins réels.
+ALLOWED_ROOTS = [os.path.realpath(r) for r in ALLOWED_ROOTS if r]
+EXCLUDE_PATHS = {os.path.realpath(p) for p in EXCLUDE_PATHS}
+CACHE_ROOTS = [os.path.realpath(r) for r in CACHE_ROOTS if r]
+TEMP_ROOTS = {os.path.realpath(r) for r in TEMP_ROOTS if r}
+
 
 def du_bytes(path):
     try:
@@ -191,6 +197,8 @@ def main():
         log.write("# Nettoyage PKDiskAudit %s\n" % stamp)
         for row in rows:
             path = row["path"]
+            if not os.path.exists(path):
+                continue
             size = du_bytes(path)
             try:
                 if os.path.isdir(path) and not os.path.islink(path):

@@ -8,7 +8,7 @@
 
 **Read-only macOS disk audit.** It measures, classifies and explains where your space went — then lets you decide. No deletions in this version.
 
-Version `2026.10.1` · [Changelog](CHANGELOG.md)
+Version `2026.10.2` · [Changelog](CHANGELOG.md)
 
 ## ✅ Features
 

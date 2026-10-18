@@ -203,18 +203,21 @@ def render_groups(groups):
     rows = []
     for g in groups:
         kind = g.get("safety", "review")
-        badge = {"safe": "SANS RISQUE", "review": "À ARBITRER", "protected": "PROTÉGÉ"}.get(kind, "À ARBITRER")
+        apparent = bool(g.get("apparent"))
+        badge = "APPARENT" if apparent else {"safe": "SANS RISQUE", "review": "À ARBITRER", "protected": "PROTÉGÉ"}.get(kind, "À ARBITRER")
+        badge_class = "review" if apparent else kind
         count = g.get("count", 0)
         count_txt = ("%s élément%s" % (num(count), "s" if count > 1 else "")) if count else ""
+        size_txt = ("≈ " if apparent else "") + gb(g.get("bytes"))
         rows.append(f"""
       <div class="group">
         <div class="g-head">
           <span class="g-name">{esc(g.get("title"))}</span>
           <span class="g-count">{esc(count_txt)}</span>
-          <span class="badge {kind}">{badge}</span>
-          <span class="g-gb">{gb(g.get("bytes"))}</span>
+          <span class="badge {badge_class}">{badge}</span>
+          <span class="g-gb">{size_txt}</span>
         </div>
-        <div class="g-bar"><i class="{kind}" style="width:{g['bytes'] / max_bytes * 100:.1f}%"></i></div>
+        <div class="g-bar"><i class="{badge_class}" style="width:{g['bytes'] / max_bytes * 100:.1f}%"></i></div>
         <p class="g-detail">{esc(g.get("reason"))}</p>
       </div>""")
     return "".join(rows)
@@ -343,7 +346,7 @@ def render_zombies(z, fast=False):
         (dash if fast else num(z.get("models")), "modèles IA", "%s de poids locaux." % gb(z.get("models_bytes"))),
         (num(z.get("sessions")), "sessions OpenCode", "%s messages, %s parties." % (num(z.get("messages")), num(z.get("parts")))),
         (gb(z.get("db_dead_bytes")), "pages mortes SQLite", "Récupérables par VACUUM, sans perdre une session."),
-        (gb(z.get("chrome_clone_bytes")), "clones de signature", "Copies temporaires laissées par les mises à jour."),
+        (gb(z.get("chrome_clone_bytes")), "clones de signature", "Taille apparente : blocs APFS partagés avec l'app d'origine."),
         (num(z.get("vms")), "machines virtuelles", "%s d'images disque." % gb(z.get("vm_bytes"))),
     ]
     return "\n".join(f"""
@@ -357,7 +360,7 @@ def render_zombies(z, fast=False):
 def render_plan(groups):
     safe = [g for g in groups if g.get("safety") == "safe"]
     db = [g for g in groups if g.get("id") == "database"]
-    review = [g for g in groups if g.get("safety") == "review" and g.get("id") != "database"]
+    review = [g for g in groups if g.get("safety") == "review" and g.get("id") != "database" and not g.get("apparent")]
     phase1 = sum(g["bytes"] for g in safe)
     phase2 = sum(g["bytes"] for g in db)
     phase3 = sum(g["bytes"] for g in review)

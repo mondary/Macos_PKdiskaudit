@@ -14,7 +14,7 @@ from collections import OrderedDict
 from . import util
 
 SCHEMA_VERSION = 1
-ENGINE_VERSION = "2026.10.1"
+ENGINE_VERSION = "2026.10.2"
 
 HOME = util.HOME
 
@@ -643,16 +643,18 @@ def build_findings(apps, apps_summary, models, caches, artifacts, system, large,
         total = sum(c["bytes"] for c in system["chrome_clone"])
         groups.append({
             "id": "chrome_clone", "title": "Clones de signature", "bytes": total,
-            "safety": "safe", "count": len(system["chrome_clone"]),
-            "reason": "Copies temporaires créées par macOS lors de mises à jour. Régénérées, jamais nécessaires.",
+            "safety": "review", "count": len(system["chrome_clone"]), "apparent": True,
+            "reason": "Taille apparente : les clones APFS partagent des blocs avec l'app d'origine. "
+                      "Le gain réel est mesuré au moment de la suppression, souvent bien inférieur.",
             "section": "items",
         })
         for c in system["chrome_clone"]:
             items.append({
                 "id": "clone:" + c["path"], "category": "clone", "title": c["name"],
-                "path": c["path"], "bytes": c["bytes"], "safety": "safe",
+                "path": c["path"], "bytes": c["bytes"], "safety": "review",
                 "action": "delete",
-                "reason": "Clone de signature temporaire." + (" Quitter Chrome avant suppression." if system.get("chrome_running") else ""),
+                "reason": "Clone de signature temporaire. Taille apparente (blocs APFS partagés)."
+                          + (" Quitter Chrome avant suppression." if system.get("chrome_running") else ""),
                 "last_modified": None,
             })
 
@@ -754,8 +756,12 @@ def app_reason(a):
 # Synthèse
 
 def summarise(disk, groups, tree, apps, models, caches, artifacts):
-    safe = sum(g["bytes"] for g in groups if g["safety"] == "safe")
-    review = sum(g["bytes"] for g in groups if g["safety"] == "review")
+    # Les groupes `apparent` (clones APFS) ne sont pas comptés dans le
+    # récupérable : `du` additionne des blocs partagés, le gain réel est
+    # mesuré à la suppression.
+    safe = sum(g["bytes"] for g in groups if g["safety"] == "safe" and not g.get("apparent"))
+    review = sum(g["bytes"] for g in groups if g["safety"] == "review" and not g.get("apparent"))
+    apparent = sum(g["bytes"] for g in groups if g.get("apparent"))
     measured = sum(t["bytes"] for t in tree)
     return {
         "total_bytes": disk["total"],
@@ -766,6 +772,7 @@ def summarise(disk, groups, tree, apps, models, caches, artifacts):
         "unattributed_bytes": max(0, disk["used"] - measured),
         "safe_bytes": safe,
         "review_bytes": review,
+        "apparent_bytes": apparent,
         "recoverable_bytes": safe + review,
         "projected_free_bytes": disk["free"] + safe,
         "groups": len(groups),

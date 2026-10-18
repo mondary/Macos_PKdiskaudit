@@ -68,6 +68,7 @@ The engine never deletes anything. It emits a versioned JSON (`schema: 1`) consu
 
 - **`useCount = 0` does not mean "never used"**: Spotlight does not track every app. The report says so explicitly.
 - A SQLite `VACUUM` compacts the file without deleting a single session; it only requires OpenCode to be closed.
+- APFS clones (`code_sign_clone`) share blocks with the original app: their `du` size is **apparent** and is not counted as recoverable space. The real gain is measured on deletion.
 - Inspired by [Mole](https://github.com/tw93/Mole) (GPL-3.0) and CleanMyMac CLI for the scan → review → confirm model. No code from those projects is reused.
 
 ## 📄 License

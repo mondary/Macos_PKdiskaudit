@@ -64,6 +64,16 @@ def du_bytes(path):
         return 0
 
 
+def free_bytes():
+    """Espace libre réel du volume Data (mêmes chiffres que Finder)."""
+    try:
+        out = subprocess.check_output(["df", "-kP", "/System/Volumes/Data"]).decode()
+        parts = out.strip().splitlines()[-1].split()
+        return int(parts[3]) * 1024
+    except Exception:
+        return 0
+
+
 def allowed(path):
     real = os.path.realpath(path)
     if real in EXCLUDE_PATHS:
@@ -173,6 +183,7 @@ def main():
     os.makedirs(LOG_DIR, exist_ok=True)
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M")
     log_path = os.path.join(LOG_DIR, "cleanup-%s.log" % stamp)
+    free_before = free_bytes()
     freed = 0
     removed = 0
     errors = []
@@ -195,7 +206,9 @@ def main():
                 log.write("ERR\t%s\t%s\n" % (path, exc))
         log.write("\nTotal: %s · %d cibles · %d erreurs\n" % (human(freed), removed, len(errors)))
 
-    print("\nTerminé : %s libérés · %d cibles · %d erreurs" % (human(freed), removed, len(errors)))
+    free_after = free_bytes()
+    print("\nTerminé : %s libérés (mesure du volume : %s) · %d cibles · %d erreurs"
+          % (human(freed), human(max(0, free_after - free_before)), removed, len(errors)))
     print("Journal : %s" % log_path)
     return 0
 

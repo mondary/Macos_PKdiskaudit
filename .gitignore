@@ -1,0 +1,11 @@
+.build/
+dist/
+build/
+.venv-build/
+__pycache__/
+*.pyc
+*.spec
+*.iconset/
+.DS_Store
+*.log
+engine/apps.json

@@ -8,7 +8,7 @@
 
 **Audit disque macOS en lecture seule.** Il mesure, classe et explique où est passée la place — puis te laisse décider. Aucune suppression dans cette version.
 
-Version `2026.10.5` · [Changelog](CHANGELOG.md)
+Version `2026.10.6` · [Changelog](CHANGELOG.md)
 
 ## ✅ Ce que ça fait
 

@@ -489,6 +489,14 @@ struct SettingsView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
+            Section("Soutenir") {
+                Link(destination: URL(string: "https://ko-fi.com/pouark")!) {
+                    Label("Soutenir PKDiskAudit sur Ko-fi", systemImage: "heart")
+                }
+                Text("Gratuit, sans compte et hors ligne. Le soutien finance les prochains chantiers.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .navigationTitle("Réglages")

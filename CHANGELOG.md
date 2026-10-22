@@ -2,6 +2,10 @@
 
 Historique des évolutions de PKDiskAudit.
 
+## [2026.10.6] - 2026-10-22
+### Added
+- Lien de soutien **Ko-fi** discret dans les réglages de l'app (`https://ko-fi.com/pouark`), sans SDK ni suivi.
+
 ## [2026.10.5] - 2026-10-22
 ### Added
 - Le rapport HTML devient navigable par **rooms** : une barre d'onglets collante (carte, gisement, détail, apps, modèles, zombies, plan) n'affiche qu'une section à la fois, avec liens profonds (`#apps`), flèches clavier et raccourcis `1`–`7`.

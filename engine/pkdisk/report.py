@@ -13,22 +13,31 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 REPORT_DIR = os.path.join(ROOT, "report")
 
 
-def load_css():
-    """Charge la feuille de style, que le moteur soit dans le dépôt ou
-    empaqueté par PyInstaller."""
+def load_asset(name, env_var=None):
+    """Charge un fichier de `report/`, que le moteur soit dans le dépôt ou
+    empaqueté par PyInstaller. Le contenu est inliné : le rapport reste
+    autonome, sans requête réseau ni fichier voisin."""
     candidates = []
-    override = os.environ.get("PKDISKAUDIT_CSS")
+    override = os.environ.get(env_var) if env_var else None
     if override:
         candidates.append(override)
     meipass = getattr(sys, "_MEIPASS", None)
     if meipass:
-        candidates.append(os.path.join(meipass, "style.css"))
-    candidates.append(os.path.join(REPORT_DIR, "style.css"))
+        candidates.append(os.path.join(meipass, name))
+    candidates.append(os.path.join(REPORT_DIR, name))
     for candidate in candidates:
         if candidate and os.path.exists(candidate):
             with open(candidate, encoding="utf-8") as f:
                 return f.read()
     return ""
+
+
+def load_css():
+    return load_asset("style.css", "PKDISKAUDIT_CSS")
+
+
+def load_js():
+    return load_asset("rooms.js", "PKDISKAUDIT_JS")
 
 
 # --------------------------------------------------------------------------
@@ -191,6 +200,70 @@ def render_treemap(items, width=1000, height=440):
             f'width:calc({w / width * 100}% - {pad * 2}px);height:calc({h / height * 100}% - {pad * 2}px);'
             f'background:{COLORS.get(item["kind"], COLORS["system"])}">{label}</div>')
     return "\n".join(out)
+
+
+# --------------------------------------------------------------------------
+# Rooms
+
+def icon(paths):
+    return (
+        '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" '
+        'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" '
+        'stroke-linejoin="round" aria-hidden="true">%s</svg>' % paths
+    )
+
+
+ROOMS = [
+    ("overview", "Carte", icon(
+        '<circle cx="12" cy="12" r="9"/><path d="M12 3v9h9"/>')),
+    ("findings", "Gisement", icon(
+        '<path d="M12 3 3 7.4l9 4.4 9-4.4L12 3Z"/>'
+        '<path d="m3 12.2 9 4.4 9-4.4"/><path d="m3 16.8 9 4.4 9-4.4"/>')),
+    ("items", "Détail", icon(
+        '<path d="M8.5 6h12M8.5 12h12M8.5 18h12"/>'
+        '<circle cx="3.6" cy="6" r="1.1"/><circle cx="3.6" cy="12" r="1.1"/>'
+        '<circle cx="3.6" cy="18" r="1.1"/>')),
+    ("apps", "Apps", icon(
+        '<rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/>'
+        '<rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/>'
+        '<rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/>'
+        '<rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>')),
+    ("models", "Modèles", icon(
+        '<path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3Z"/>'
+        '<path d="m4 7.5 8 4.5 8-4.5"/><path d="M12 12v9"/>')),
+    ("zombies", "Zombies", icon(
+        '<path d="M5 20V11a7 7 0 0 1 14 0v9l-2.3-1.6L14.4 20 12 18.4 9.6 20 7.3 18.4 5 20Z"/>'
+        '<circle cx="9.3" cy="10.5" r=".9"/><circle cx="14.7" cy="10.5" r=".9"/>')),
+    ("plan", "Plan", icon(
+        '<path d="M9 6h12M9 12h12M9 18h12"/>'
+        '<path d="m3 6 1.6 1.6L7 5"/><path d="m3 12 1.6 1.6L7 11"/>'
+        '<path d="m3 18 1.6 1.6L7 17"/>')),
+]
+
+
+def render_rooms_nav():
+    tabs = []
+    for index, (rid, label, svg) in enumerate(ROOMS, 1):
+        active = index == 1
+        tabs.append(
+            f'<button class="room-tab" type="button" role="tab" id="tab-{rid}" '
+            f'data-room="{rid}" aria-controls="{rid}" aria-selected="{str(active).lower()}" '
+            f'tabindex="{0 if active else -1}" title="Raccourci : {index}">'
+            f'{svg}<span>{esc(label)}</span></button>'
+        )
+    hint = "1–%d" % len(ROOMS)
+    return f"""
+  <nav class="rooms" aria-label="Sections du rapport">
+    <div class="rooms-in">
+      <div class="rooms-scroll" role="tablist" aria-label="Sections du rapport">
+        {''.join(tabs)}
+      </div>
+      <div class="rooms-side">
+        <span class="rooms-hint" aria-hidden="true">{hint}</span>
+        <button class="rooms-all" type="button" aria-pressed="false">Tout déplier</button>
+      </div>
+    </div>
+  </nav>"""
 
 
 # --------------------------------------------------------------------------
@@ -477,6 +550,19 @@ def render(report, out_path):
   Voici la carte, et les <strong>{gb(safe)}</strong> qu'on peut récupérer sans risquer un seul fichier.</p>
   {scan_note}
 
+  <div class="pledges">
+    <div class="pledge">
+      <h3>{icon('<path d="M12 3 5 6v6c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-3Z"/><path d="m9 12 2.2 2.2L15.5 10"/>')}Rien n'est supprimé.</h3>
+      <p>Chaque action est décrite puis soumise à ta revue. Ce rapport <b>n'exécute rien</b> :
+      il mesure, classe, et laisse la décision ouverte.</p>
+    </div>
+    <div class="pledge">
+      <h3>{icon('<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>')}Rien ne sort du Mac.</h3>
+      <p>Mesure, classification et inventaire se font <b>en local</b>. Aucun nom de fichier
+      n'est envoyé, aucun compte à créer : ce HTML s'ouvre hors ligne.</p>
+    </div>
+  </div>
+
   <div class="hero">
     <div class="diskbar">
       <div class="stack">
@@ -518,7 +604,15 @@ def render(report, out_path):
     <div class="kpi"><div class="n">{"—" if fast else num(zombies.get("apps"))}</div><div class="l">{"inventaire désactivé" if fast else "applications · " + gb(zombies.get("apps_bytes"))}</div></div>
   </div>
 
-  <section id="overview">
+  <p class="rule">
+    <span><i class="sw-grey"></i>Le gris, c'est ce que tu gardes.</span>
+    <span><i class="sw-safe"></i>Le vert se reconstruit tout seul.</span>
+    <span><i class="sw-warn"></i>L'ambre demande une décision.</span>
+  </p>
+
+  {render_rooms_nav()}
+
+  <section class="room is-active" id="overview" role="tabpanel" aria-labelledby="tab-overview">
     <div class="s-head">
       <h2>La carte du disque</h2>
       <div class="s-note">{gb(sum(e["bytes"] for e in tree))} attribués sur {gb(used)}</div>
@@ -535,7 +629,7 @@ def render(report, out_path):
     </div>
   </section>
 
-  <section id="findings">
+  <section class="room" id="findings" role="tabpanel" aria-labelledby="tab-findings">
     <div class="s-head">
       <h2>Le gisement</h2>
       <div class="s-note">classé par taille</div>
@@ -550,7 +644,7 @@ def render(report, out_path):
     </div>
   </section>
 
-  <section id="items">
+  <section class="room" id="items" role="tabpanel" aria-labelledby="tab-items">
     <div class="s-head">
       <h2>Le détail</h2>
       <div class="s-note">chemins et actions</div>
@@ -560,7 +654,7 @@ def render(report, out_path):
     {render_items(items)}
   </section>
 
-  <section id="apps">
+  <section class="room" id="apps" role="tabpanel" aria-labelledby="tab-apps">
     <div class="s-head">
       <h2>Les applications</h2>
       <div class="s-note">{num(len(apps))} apps · {gb(sum(a.get("bytes") or 0 for a in apps))}</div>
@@ -571,7 +665,7 @@ def render(report, out_path):
     {"<p class='s-sub'>Inventaire désactivé en mode rapide. Relance sans <code>--fast</code> pour le voir.</p>" if fast else render_apps(apps)}
   </section>
 
-  <section id="models">
+  <section class="room" id="models" role="tabpanel" aria-labelledby="tab-models">
     <div class="s-head">
       <h2>Les modèles</h2>
       <div class="s-note">{num(len(models))} modèles · {gb(sum(m.get("bytes") or 0 for m in models))}</div>
@@ -581,7 +675,7 @@ def render(report, out_path):
     {"<p class='s-sub'>Inventaire désactivé en mode rapide.</p>" if fast else render_models(models)}
   </section>
 
-  <section id="zombies">
+  <section class="room" id="zombies" role="tabpanel" aria-labelledby="tab-zombies">
     <div class="s-head">
       <h2>Les zombies</h2>
       <div class="s-note">ce qui s'accumule sans qu'on le voie</div>
@@ -593,7 +687,7 @@ def render(report, out_path):
     </div>
   </section>
 
-  <section id="plan">
+  <section class="room" id="plan" role="tabpanel" aria-labelledby="tab-plan">
     <div class="s-head">
       <h2>Le plan</h2>
       <div class="s-note">dans cet ordre</div>
@@ -608,11 +702,13 @@ def render(report, out_path):
   <footer>
     <b>Moteur</b> — {esc(report.get("engine"))} · schéma {report.get("schema")} · {esc(report.get("duration_seconds"))} s · {esc(report.get("generated_at"))}<br>
     <b>Méthode</b> — du -x · find · sqlite3 dbstat · mdls · system_profiler · brew cleanup -n · diskutil · tmutil<br>
+    <b>Navigation</b> — onglets 1–7, ou « Tout déplier » pour lire le rapport d'un seul tenant.<br>
     <b>Note</b> — Les montages réseau (DesktopArchive) et les volumes cloud sont exclus. Aucune suppression n'a été effectuée.<br>
     <b>Sécurité</b> — « sans risque » = reconstruisible automatiquement (cache, build, dépendances).
   </footer>"""
 
     css = load_css()
+    js = load_js()
     data_json = json.dumps(report, ensure_ascii=False, default=str)
     html_doc = f"""<!DOCTYPE html>
 <html lang="fr">
@@ -630,10 +726,9 @@ def render(report, out_path):
 </div>
 <script id="pkdisk-data" type="application/json">{data_json}</script>
 <script>
-function scrollToSection(id) {{
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
-}}
+{js}
+</script>
+<script>
 function filterTable(inputId, tableId) {{
   const q = (document.getElementById(inputId).value || '').toLowerCase();
   const rows = document.querySelectorAll('#' + tableId + ' tbody tr');

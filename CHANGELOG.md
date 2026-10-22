@@ -2,6 +2,14 @@
 
 Historique des évolutions de PKDiskAudit.
 
+## [2026.10.5] - 2026-10-22
+### Added
+- Le rapport HTML devient navigable par **rooms** : une barre d'onglets collante (carte, gisement, détail, apps, modèles, zombies, plan) n'affiche qu'une section à la fois, avec liens profonds (`#apps`), flèches clavier et raccourcis `1`–`7`.
+- Bouton **Tout déplier** et feuille d'impression : le rapport reste lisible d'un seul tenant, et les sections restent toutes présentes sans JavaScript.
+- Deux promesses en tête de rapport (« Rien n'est supprimé », « Rien ne sort du Mac ») et une règle de lecture couleur gris / vert / ambre.
+### Changed
+- `report/rooms.js` est inliné dans le HTML par le moteur (nouvel asset PyInstaller) ; le rapport reste autonome et hors ligne.
+
 ## [2026.10.4] - 2026-10-18
 ### Fixed
 - Les garde-fous de `cleanup.py` et `cleanup_review.py` comparent désormais des chemins **réels** : `/var` étant un lien vers `/private/var`, les temporaires système étaient refusés à tort (et le nettoyage des caches sous-estimé).

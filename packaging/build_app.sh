@@ -21,6 +21,7 @@ else
   echo "Moteur absent : lance packaging/build_engine.sh avant pour un bundle autonome."
 fi
 cp "$ROOT/report/style.css" "$APP/Contents/Resources/engine/style.css"
+cp "$ROOT/report/rooms.js" "$APP/Contents/Resources/engine/rooms.js"
 cp "$ROOT/packaging/icons/icon.icns" "$APP/Contents/Resources/icon.icns"
 
 cat > "$APP/Contents/Info.plist" <<EOF

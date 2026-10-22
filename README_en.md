@@ -8,7 +8,7 @@
 
 **Read-only macOS disk audit.** It measures, classifies and explains where your space went — then lets you decide. No deletions in this version.
 
-Version `2026.10.4` · [Changelog](CHANGELOG.md)
+Version `2026.10.5` · [Changelog](CHANGELOG.md)
 
 ## ✅ Features
 
@@ -19,7 +19,7 @@ Version `2026.10.4` · [Changelog](CHANGELOG.md)
 - **Applications**: 345 apps measured, last use and launch count from Spotlight, with unknown usage made explicit.
 - **AI models**: Hugging Face, Ollama, LM Studio and third-party app `models` folders.
 - **Zombies**: OpenCode database free pages, Chrome code-sign clones, caches, build artifacts, VMs.
-- **Self-contained HTML report**: exportable, offline, no dependencies.
+- **Self-contained HTML report**: seven tabs — map, payload, detail, apps, models, zombies, plan — exportable, offline, no dependencies.
 
 ## 🚀 Usage
 

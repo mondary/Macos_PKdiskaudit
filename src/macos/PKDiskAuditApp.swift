@@ -6,7 +6,7 @@ import WebKit
 // MARK: - Modèle
 
 enum SidebarItem: String, CaseIterable, Identifiable {
-    case overview, findings, items, apps, models, plan, settings
+    case overview, findings, items, apps, models, zombies, plan, settings
 
     var id: String { rawValue }
 
@@ -17,6 +17,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
         case .items: return "Le détail"
         case .apps: return "Applications"
         case .models: return "Modèles"
+        case .zombies: return "Les zombies"
         case .plan: return "Le plan"
         case .settings: return "Réglages"
         }
@@ -29,6 +30,7 @@ enum SidebarItem: String, CaseIterable, Identifiable {
         case .items: return "list.bullet.rectangle"
         case .apps: return "square.grid.2x2"
         case .models: return "cpu"
+        case .zombies: return "exclamationmark.triangle"
         case .plan: return "list.number"
         case .settings: return "gearshape"
         }

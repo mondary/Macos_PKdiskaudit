@@ -16,6 +16,7 @@ pyinstaller --noconfirm --clean --onefile \
   --name pkdisk \
   --paths engine \
   --add-data "report/style.css:." \
+  --add-data "report/rooms.js:." \
   --exclude-module tkinter \
   engine/pkdisk_entry.py
 

@@ -8,7 +8,7 @@
 
 **Audit disque macOS en lecture seule.** Il mesure, classe et explique où est passée la place — puis te laisse décider. Aucune suppression dans cette version.
 
-Version `2026.10.4` · [Changelog](CHANGELOG.md)
+Version `2026.10.5` · [Changelog](CHANGELOG.md)
 
 ## ✅ Ce que ça fait
 
@@ -19,7 +19,7 @@ Version `2026.10.4` · [Changelog](CHANGELOG.md)
 - **Applications** : 345 apps mesurées, dernière utilisation et nombre de lancements via Spotlight, avec la mention explicite des usages inconnus.
 - **Modèles IA** : Hugging Face, Ollama, LM Studio et dossiers `models` des apps tierces.
 - **Zombies** : base OpenCode (pages libres SQLite), clones de signature Chrome, caches, artefact de build, VM.
-- **Rapport HTML autonome** : exportable, lisible hors ligne, sans dépendance.
+- **Rapport HTML autonome** : sept onglets — carte, gisement, détail, apps, modèles, zombies, plan — exportable, lisible hors ligne, sans dépendance.
 
 ## 🚀 Utilisation
 
